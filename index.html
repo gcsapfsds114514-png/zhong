@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D 长征 · 照片立体互动图</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Microsoft YaHei', 'Inter', sans-serif;
+      background: #000;
+      color: #c8d8e8;
+    }
+
+    /* 左侧时间表 */
+    #timeline-panel {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 300px;
+      height: 100vh;
+      background: linear-gradient(180deg, rgba(16,24,36,0.92), rgba(12,20,30,0.88));
+      backdrop-filter: blur(12px);
+      border-right: 1px solid rgba(100,160,220,0.25);
+      box-shadow: 4px 0 30px rgba(0,0,0,0.6);
+      display: flex;
+      flex-direction: column;
+      z-index: 10;
+      padding: 1.2rem 0 0.8rem 0;
+      border-radius: 0 16px 16px 0;
+    }
+
+    #timeline-panel h2 {
+      font-family: 'Georgia', serif;
+      font-size: 1.4rem;
+      text-align: center;
+      margin: 0 0 0.8rem 0;
+      color: #7aaac8;
+      letter-spacing: 5px;
+      border-bottom: 1px solid #2a3a4a;
+      padding-bottom: 0.6rem;
+      text-shadow: 0 0 15px rgba(100,180,240,0.4);
+    }
+
+    .timeline-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 0.7rem;
+      scrollbar-width: thin;
+      scrollbar-color: #3a6a8a #1a2430;
+    }
+    .timeline-list::-webkit-scrollbar { width: 4px; }
+    .timeline-list::-webkit-scrollbar-track { background: #1a2430; }
+    .timeline-list::-webkit-scrollbar-thumb { background: #3a6a8a; border-radius: 10px; }
+
+    .timeline-item {
+      background: rgba(24,36,48,0.65);
+      border-left: 3px solid #3a7aaa;
+      margin-bottom: 0.6rem;
+      padding: 0.75rem 0.9rem;
+      border-radius: 0 10px 10px 0;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      color: #a0b8cc;
+    }
+    .timeline-item:hover {
+      background: rgba(40,60,80,0.9);
+      border-left-color: #6aaad0;
+      transform: translateX(3px);
+    }
+    .timeline-item.active {
+      background: rgba(30,55,80,0.95);
+      border-left-color: #8ac0e0;
+      box-shadow: 0 0 20px rgba(80,160,240,0.35), inset 0 0 10px rgba(100,180,240,0.15);
+      color: #e0f0ff;
+      transform: scale(1.02);
+    }
+    .timeline-item .date {
+      font-size: 0.7rem;
+      color: #6a9aba;
+      letter-spacing: 1px;
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+    }
+    .timeline-item .title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #d0e4f4;
+      font-family: 'Georgia', serif;
+    }
+    .timeline-item .desc {
+      font-size: 0.7rem;
+      color: #7a94a8;
+      margin-top: 0.25rem;
+      line-height: 1.35;
+    }
+
+    /* 信息浮层 */
+    #info-overlay {
+      position: absolute;
+      bottom: 28px;
+      right: 28px;
+      background: rgba(10,18,28,0.88);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(100,160,210,0.35);
+      border-radius: 14px;
+      padding: 1.3rem 1.8rem;
+      max-width: 380px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+      z-index: 20;
+      color: #c8d8e8;
+      border-left: 5px solid #4a8ab0;
+      pointer-events: none;
+    }
+    #info-overlay .info-date {
+      font-size: 0.8rem;
+      color: #6a9aba;
+      letter-spacing: 2px;
+      margin-bottom: 0.2rem;
+    }
+    #info-overlay .info-title {
+      font-size: 1.6rem;
+      font-family: 'Georgia', serif;
+      font-weight: 700;
+      color: #e0f0ff;
+      margin-bottom: 0.4rem;
+      text-shadow: 0 0 15px rgba(80,160,240,0.4);
+    }
+    #info-overlay .info-desc {
+      font-size: 0.9rem;
+      line-height: 1.55;
+      color: #a8c0d4;
+    }
+    #info-overlay .info-coord {
+      margin-top: 0.6rem;
+      font-size: 0.7rem;
+      color: #5a7a94;
+      font-family: monospace;
+    }
+
+    /* 标题 */
+    #main-title {
+      position: absolute;
+      top: 18px;
+      right: 36px;
+      font-family: 'Georgia', serif;
+      font-size: 2.6rem;
+      font-weight: 700;
+      color: rgba(120,180,220,0.25);
+      letter-spacing: 18px;
+      pointer-events: none;
+      z-index: 5;
+      text-shadow: 0 0 30px rgba(80,160,240,0.3);
+      user-select: none;
+    }
+
+    /* 提示 */
+    #hint {
+      position: absolute;
+      bottom: 18px;
+      left: 320px;
+      color: #4a6a84;
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      z-index: 5;
+      pointer-events: none;
+      background: rgba(10,16,24,0.5);
+      padding: 4px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(80,140,190,0.15);
+    }
+
+    /* 上传提示 */
+    #upload-tip {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #6a9aba;
+      font-size: 1rem;
+      text-align: center;
+      z-index: 100;
+      background: rgba(10,18,28,0.9);
+      padding: 20px 40px;
+      border-radius: 16px;
+      border: 1px solid #3a6a8a;
+      pointer-events: none;
+    }
+    #upload-tip.hidden { display: none; }
+
+    @media (max-width: 800px) {
+      #timeline-panel { width: 240px; }
+      #main-title { font-size: 1.6rem; right: 16px; letter-spacing: 8px; }
+      #info-overlay { bottom: 12px; right: 12px; max-width: 250px; padding: 0.9rem 1rem; }
+      #hint { left: 260px; font-size: 0.65rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="timeline-panel">
+    <h2>长 征 · 征 途</h2>
+    <div class="timeline-list" id="timelineList"></div>
+    <div style="padding: 0.6rem 1rem 0; font-size: 0.65rem; color: #4a6a84; text-align: center; border-top: 1px solid #1a2a3a;">
+      点击事件查看位置
+    </div>
+  </div>
+
+  <div id="main-title">征 途</div>
+  <div id="hint">拖动旋转 · 滚轮缩放 · 点击时间表联动</div>
+
+  <div id="info-overlay">
+    <div class="info-date" id="infoDate">1934年10月</div>
+    <div class="info-title" id="infoTitle">瑞金出发</div>
+    <div class="info-desc" id="infoDesc">中央红军从江西瑞金等地出发，开始战略转移。</div>
+    <div class="info-coord" id="infoCoord">纬度: 25.8°N 经度: 116.0°E</div>
+  </div>
+
+  <div id="upload-tip">
+    正在加载地形图...<br>
+    <small style="color:#4a6a84;">请将您提供的中国地形照片放在同一目录下，命名为 <b style="color:#7aaac8;">terrain.jpg</b></small>
+  </div>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+      }
+    }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+    // ============ 场景 ============
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x050a10);
+
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 2000);
+    camera.position.set(0, 20, 90);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    document.body.appendChild(renderer.domElement);
+
+    const labelRenderer = new CSS2DRenderer();
+    labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    labelRenderer.domElement.style.position = 'absolute';
+    labelRenderer.domElement.style.top = '0px';
+    labelRenderer.domElement.style.left = '0px';
+    labelRenderer.domElement.style.pointerEvents = 'none';
+    labelRenderer.domElement.style.zIndex = '5';
+    document.body.appendChild(labelRenderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.maxPolarAngle = Math.PI / 2.1;
+    controls.minDistance = 30;
+    controls.maxDistance = 180;
+    controls.target.set(0, 0, 0);
+
+    // ============ 灯光 (冷色) ============
+    scene.add(new THREE.AmbientLight(0x3a4a5a, 1.2));
+
+    const dirLight = new THREE.DirectionalLight(0xaaccff, 0.9);
+    dirLight.position.set(20, 50, 30);
+    scene.add(dirLight);
+
+    const backLight = new THREE.PointLight(0x2a6a9a, 0.6);
+    backLight.position.set(-40, 20, -30);
+    scene.add(backLight);
+
+    // ============ 核心: 照片背景平面 ============
+    // 使用照片作为纹理，创建一个垂直的平面(背景墙) 和 一个倾斜的地面
+    // 方案: 创建一个巨大的平面, 贴照片纹理, 稍微倾斜让它有立体感
+    const photoGroup = new THREE.Group();
+
+    // 根据照片比例 (假设宽高比约 1.47:1, 按常见地图比例)
+    const photoWidth = 160;
+    const photoHeight = photoWidth * 0.68; // 大致 160:109
+
+    const photoGeometry = new THREE.PlaneGeometry(photoWidth, photoHeight, 1, 1);
+    
+    // 创建纹理加载器
+    const textureLoader = new THREE.TextureLoader();
+    
+    // 尝试加载地形照片
+    // 实际使用时请将照片命名为 terrain.jpg 放在同目录
+    let photoTexture = null;
+    let usingFallback = false;
+
+    const uploadTip = document.getElementById('upload-tip');
+
+    // 创建画布生成的备用纹理 (如果照片不存在，就用程序生成的简化地图)
+    function createFallbackTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1200;
+      canvas.height = 816;
+      const ctx = canvas.getContext('2d');
+
+      // 底色 - 海洋
+      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      gradient.addColorStop(0, '#0a1a2a');
+      gradient.addColorStop(1, '#0d2a3a');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 绘制简化中国轮廓 (粗略)
+      ctx.fillStyle = '#2a4a3a';
+      ctx.strokeStyle = '#4a7a6a';
+      ctx.lineWidth = 3;
+
+      // 用简化的贝塞尔曲线勾勒中国大陆
+      ctx.beginPath();
+      ctx.moveTo(280, 220);
+      ctx.bezierCurveTo(350, 150, 500, 130, 620, 180);
+      ctx.bezierCurveTo(720, 220, 820, 280, 900, 350);
+      ctx.bezierCurveTo(950, 420, 960, 500, 920, 580);
+      ctx.bezierCurveTo(880, 640, 780, 680, 680, 700);
+      ctx.bezierCurveTo(580, 720, 480, 700, 400, 660);
+      ctx.bezierCurveTo(320, 620, 260, 540, 240, 450);
+      ctx.bezierCurveTo(220, 360, 240, 280, 280, 220);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // 高原区域 (西部)
+      ctx.fillStyle = 'rgba(90,110,100,0.5)';
+      ctx.beginPath();
+      ctx.moveTo(280, 220);
+      ctx.bezierCurveTo(320, 280, 340, 380, 320, 480);
+      ctx.bezierCurveTo(300, 560, 280, 600, 340, 640);
+      ctx.bezierCurveTo(400, 680, 480, 660, 500, 580);
+      ctx.bezierCurveTo(520, 480, 460, 380, 420, 300);
+      ctx.bezierCurveTo(380, 240, 320, 220, 280, 220);
+      ctx.closePath();
+      ctx.fill();
+
+      // 标注
+      ctx.fillStyle = '#aaccee';
+      ctx.font = 'bold 36px serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('中国地形图', 600, 120);
+      ctx.font = '20px sans-serif';
+      ctx.fillStyle = '#7aaac8';
+      ctx.fillText('(请替换为您的照片: terrain.jpg)', 600, 780);
+
+      return canvas;
+    }
+
+    // 加载照片
+    textureLoader.load(
+      'terrain.jpg',
+      (texture) => {
+        // 成功加载
+        photoTexture = texture;
+        photoTexture.encoding = THREE.sRGBEncoding;
+        setupPhotoPlane(photoTexture);
+        uploadTip.classList.add('hidden');
+        console.log('照片加载成功');
+      },
+      undefined,
+      (err) => {
+        // 失败, 使用备用
+        console.warn('未找到 terrain.jpg, 使用备用纹理');
+        usingFallback = true;
+        const canvas = createFallbackTexture();
+        const fallbackTexture = new THREE.CanvasTexture(canvas);
+        fallbackTexture.encoding = THREE.sRGBEncoding;
+        setupPhotoPlane(fallbackTexture);
+        uploadTip.innerHTML = '未找到 terrain.jpg<br><small style="color:#4a6a84;">请将照片放在同目录，或继续使用备用地图</small>';
+        setTimeout(() => uploadTip.classList.add('hidden'), 3000);
+      }
+    );
+
+    function setupPhotoPlane(texture) {
+      // 主平面 - 倾斜的"地图桌面"
+      const mat = new THREE.MeshStandardMaterial({
+        map: texture,
+        roughness: 0.8,
+        metalness: 0.05,
+        emissive: new THREE.Color(0x1a2a3a),
+        emissiveIntensity: 0.15,
+        side: THREE.DoubleSide,
+      });
+
+      const plane = new THREE.Mesh(photoGeometry, mat);
+      // 倾斜角度, 模拟地图平铺在桌面上, 略带仰角
+      plane.rotation.x = -Math.PI / 2 + 0.25; // 约 -75度, 稍微立起来
+      plane.position.y = 0;
+      plane.receiveShadow = true;
+      photoGroup.add(plane);
+
+      // 添加一个微弱的边框
+      const edgeGeo = new THREE.EdgesGeometry(photoGeometry);
+      const edgeMat = new THREE.LineBasicMaterial({ color: 0x3a6a8a, transparent: true, opacity: 0.4 });
+      const edges = new THREE.LineSegments(edgeGeo, edgeMat);
+      edges.rotation.copy(plane.rotation);
+      edges.position.copy(plane.position);
+      photoGroup.add(edges);
+    }
+
+    scene.add(photoGroup);
+
+    // ============ 3D 立体元素 ============
+
+    // 坐标映射: 将照片上的像素位置映射到3D空间
+    // 照片平面宽 photoWidth=160, 高 photoHeight=109 (约160*0.68)
+    // 照片左上角对应 3D (-80, +54.5), 右下角 (80, -54.5)
+    // 但由于平面倾斜了, 我们用一个统一的映射函数
+    // 关键: 假设照片上 (0,0) 是左上角, (1,1)是右下角
+    // 映射到3D: x = (u - 0.5) * photoWidth
+    //           z = (v - 0.5) * photoHeight (在平面旋转前)
+    // 但平面旋转后, 需要计算实际位置
+    
+    // 简化: 直接在平面局部坐标中放置标记, 然后一起旋转
+    // 但标记需要独立于平面(球体要立起来), 所以使用世界坐标
+    
+    // 照片上的地理坐标映射 (通过观察照片估算)
+    // 照片中中国区域大约占: 左边界约 5% 到 95%, 上边界约 15% 到 85%
+    // 我们需要将历史事件的地理经纬度转换为照片上的UV坐标
+    
+    // 中国大致经纬度范围: 经度 73°E - 135°E, 纬度 18°N - 54°N
+    // 照片上中国区域: u: 0.05 - 0.95, v: 0.12 - 0.88 (v从顶部到底部)
+    
+    function geoToUV(lon, lat) {
+      // 经度映射到 u (0-1)
+      const u = (lon - 73) / (135 - 73);
+      // 纬度映射到 v (0-1, 从上到下), 纬度越高v越小(越靠上)
+      const v = 1 - (lat - 18) / (54 - 18);
+      // 映射到照片的实际区域 (根据照片留白调整)
+      const uAdj = 0.05 + u * 0.90;
+      const vAdj = 0.12 + v * 0.76;
+      return { u: uAdj, v: vAdj };
+    }
+
+    // 将UV转换为3D世界坐标 (在平面未旋转前)
+    // 局部坐标: x = (u - 0.5) * photoWidth, y = (0.5 - v) * photoHeight
+    // 然后应用平面的旋转
+    function uvTo3D(u, v) {
+      const localX = (u - 0.5) * photoWidth;
+      const localY = (0.5 - v) * photoHeight;
+      const localZ = 0; // 平面上
+      
+      // 创建点, 应用平面旋转
+      const point = new THREE.Vector3(localX, localY, localZ);
+      // 平面的旋转是 rotation.x = -Math.PI/2 + 0.25
+      const rotX = -Math.PI / 2 + 0.25;
+      const rotated = point.clone();
+      rotated.applyEuler(new THREE.Euler(rotX, 0, 0));
+      
+      // 加上平面位置偏移 (y=0, 但旋转后局部Z会变成世界Y的一部分)
+      // 实际上平面位置在(0,0,0), 旋转后局部坐标即为世界坐标
+      return rotated;
+    }
+
+    // ============ 长征事件 ============
+    const events = [
+      { date: '1934年10月', title: '瑞金出发', desc: '中央红军从江西瑞金等地出发，开始战略转移。', coord: '25.8°N, 116.0°E', lon: 116.0, lat: 25.8 },
+      { date: '1934年11月', title: '湘江战役', desc: '红军突破第四道封锁线，损失惨重。', coord: '25.5°N, 111.0°E', lon: 111.0, lat: 25.5 },
+      { date: '1935年1月', title: '遵义会议', desc: '确立毛泽东同志的领导地位，是长征转折点。', coord: '27.7°N, 106.9°E', lon: 106.9, lat: 27.7 },
+      { date: '1935年2月', title: '四渡赤水', desc: '机动灵活，摆脱国民党军追堵。', coord: '28.1°N, 105.8°E', lon: 105.8, lat: 28.1 },
+      { date: '1935年5月', title: '巧渡金沙江', desc: '摆脱数十万敌军围追堵截。', coord: '26.5°N, 102.0°E', lon: 102.0, lat: 26.5 },
+      { date: '1935年5月', title: '飞夺泸定桥', desc: '22勇士冒火夺取铁索桥。', coord: '29.9°N, 102.2°E', lon: 102.2, lat: 29.9 },
+      { date: '1935年6月', title: '翻越夹金山', desc: '征服第一座大雪山。', coord: '30.8°N, 102.7°E', lon: 102.7, lat: 30.8 },
+      { date: '1935年8月', title: '穿过草地', desc: '艰难穿越松潘草地，牺牲巨大。', coord: '33.0°N, 102.5°E', lon: 102.5, lat: 33.0 },
+      { date: '1935年10月', title: '抵达吴起镇', desc: '中央红军到达陕北，长征胜利结束。', coord: '36.9°N, 108.2°E', lon: 108.2, lat: 36.9 },
+    ];
+
+    // 计算每个事件在3D空间的位置
+    const eventPositions = events.map(e => {
+      const { u, v } = geoToUV(e.lon, e.lat);
+      return uvTo3D(u, v);
+    });
+
+    // 存储标记对象
+    const markers = [];
+
+    // ============ 创建标记 ============
+    events.forEach((event, index) => {
+      const pos = eventPositions[index];
+      
+      // 让球体稍微抬高, 离开平面
+      const normal = new THREE.Vector3(0, 1, 0); // 近似向上
+      // 由于平面倾斜, 法线方向计算比较复杂, 简单让Y+2
+      const finalPos = pos.clone();
+      finalPos.y += 2.5;
+
+      // 核心球体 - 冷色发光
+      const sphereGeo = new THREE.SphereGeometry(1.2, 20, 20);
+      const sphereMat = new THREE.MeshStandardMaterial({
+        color: 0x5a9ac0,
+        emissive: new THREE.Color(0x2a6a9a),
+        emissiveIntensity: 1.8,
+        roughness: 0.2,
+        metalness: 0.3,
+      });
+      const sphere = new THREE.Mesh(sphereGeo, sphereMat);
+      sphere.position.copy(finalPos);
+      sphere.castShadow = true;
+      sphere.receiveShadow = true;
+      scene.add(sphere);
+
+      // 外光晕
+      const glowGeo = new THREE.SphereGeometry(2.2, 12, 12);
+      const glowMat = new THREE.MeshBasicMaterial({
+        color: 0x6ab0d0,
+        transparent: true,
+        opacity: 0.12,
+        wireframe: true,
+      });
+      const glow = new THREE.Mesh(glowGeo, glowMat);
+      glow.position.copy(finalPos);
+      scene.add(glow);
+
+      // 光柱 - 连接照片平面与球体
+      const pillarGeo = new THREE.CylinderGeometry(0.08, 0.15, 2.5, 8);
+      const pillarMat = new THREE.MeshStandardMaterial({
+        color: 0x7ab0d0,
+        emissive: new THREE.Color(0x1a4a6a),
+        transparent: true,
+        opacity: 0.6,
+      });
+      const pillar = new THREE.Mesh(pillarGeo, pillarMat);
+      pillar.position.set(finalPos.x, pos.y + 1.25, finalPos.z);
+      scene.add(pillar);
+
+      // 底部圆环 (在照片平面上的投影点)
+      const ringGeo = new THREE.RingGeometry(1.4, 1.8, 32);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: 0x4a8ab0,
+        transparent: true,
+        opacity: 0.5,
+        side: THREE.DoubleSide,
+      });
+      const ring = new THREE.Mesh(ringGeo, ringMat);
+      ring.position.copy(pos);
+      ring.rotation.x = -Math.PI / 2 + 0.25;
+      scene.add(ring);
+
+      // CSS标签
+      const labelDiv = document.createElement('div');
+      labelDiv.textContent = `${index+1}. ${event.title}`;
+      labelDiv.style.color = '#c0d8e8';
+      labelDiv.style.fontSize = '12px';
+      labelDiv.style.fontWeight = 'bold';
+      labelDiv.style.textShadow = '1px 1px 4px #000';
+      labelDiv.style.background = 'rgba(12,20,30,0.85)';
+      labelDiv.style.padding = '3px 12px';
+      labelDiv.style.borderRadius = '20px';
+      labelDiv.style.borderLeft = '3px solid #4a8ab0';
+      labelDiv.style.whiteSpace = 'nowrap';
+      labelDiv.style.pointerEvents = 'none';
+      
+      const label = new CSS2DObject(labelDiv);
+      label.position.set(finalPos.x, finalPos.y + 3.0, finalPos.z);
+      scene.add(label);
+
+      markers.push({ sphere, glow, labelDiv, finalPos, ring, event });
+    });
+
+    // ============ 路线绘制 (连接各标记点) ============
+    const routePoints = eventPositions.map((p, i) => {
+      const pos = p.clone();
+      pos.y += 2.5; // 与球体同高
+      return pos;
+    });
+
+    // 创建平滑曲线
+    const curve = new THREE.CatmullRomCurve3(routePoints);
+    
+    // 主路线 - 冷色发光管道
+    const tubeGeo = new THREE.TubeGeometry(curve, 200, 0.4, 8, false);
+    const tubeMat = new THREE.MeshStandardMaterial({
+      color: 0x4a8aaa,
+      emissive: new THREE.Color(0x1a4a6a),
+      roughness: 0.3,
+      metalness: 0.2,
+      transparent: true,
+      opacity: 0.85,
+    });
+    const tube = new THREE.Mesh(tubeGeo, tubeMat);
+    scene.add(tube);
+
+    // 发光叠加层
+    const tubeGlowGeo = new THREE.TubeGeometry(curve, 200, 0.18, 6, false);
+    const tubeGlowMat = new THREE.MeshStandardMaterial({
+      color: 0x88ccee,
+      emissive: new THREE.Color(0x4488bb),
+      transparent: true,
+      opacity: 0.6,
+    });
+    const tubeGlow = new THREE.Mesh(tubeGlowGeo, tubeGlowMat);
+    scene.add(tubeGlow);
+
+    // ============ 时间表交互 ============
+    const timelineList = document.getElementById('timelineList');
+    events.forEach((event, index) => {
+      const item = document.createElement('div');
+      item.className = 'timeline-item' + (index === 0 ? ' active' : '');
+      item.dataset.index = index;
+      item.innerHTML = `
+        <div class="date">${event.date}</div>
+        <div class="title">${event.title}</div>
+        <div class="desc">${event.desc}</div>
+      `;
+      item.addEventListener('click', () => {
+        setActiveEvent(index);
+      });
+      timelineList.appendChild(item);
+    });
+
+    const infoDate = document.getElementById('infoDate');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoDesc = document.getElementById('infoDesc');
+    const infoCoord = document.getElementById('infoCoord');
+
+    let activeIndex = -1;
+
+    function setActiveEvent(index) {
+      if (index === activeIndex) return;
+      activeIndex = index;
+
+      // 时间表样式
+      document.querySelectorAll('.timeline-item').forEach((item, i) => {
+        item.classList.toggle('active', i === index);
+      });
+
+      // 信息浮层
+      const ev = events[index];
+      infoDate.textContent = ev.date;
+      infoTitle.textContent = ev.title;
+      infoDesc.textContent = ev.desc;
+      infoCoord.textContent = `纬度: ${ev.coord.split(',')[0]}  经度: ${ev.coord.split(',')[1]}`;
+
+      // 高亮标记
+      markers.forEach((marker, i) => {
+        if (i === index) {
+          marker.sphere.material.emissiveIntensity = 3.0;
+          marker.sphere.scale.set(1.5, 1.5, 1.5);
+          marker.glow.material.opacity = 0.5;
+          marker.glow.scale.set(1.4, 1.4, 1.4);
+          marker.labelDiv.style.background = 'rgba(60,120,180,0.95)';
+          marker.labelDiv.style.color = '#fff';
+          marker.labelDiv.style.borderLeftColor = '#88ccee';
+          marker.ring.material.opacity = 0.9;
+          marker.ring.scale.set(1.3, 1.3, 1.3);
+        } else {
+          marker.sphere.material.emissiveIntensity = 1.8;
+          marker.sphere.scale.set(1, 1, 1);
+          marker.glow.material.opacity = 0.12;
+          marker.glow.scale.set(1, 1, 1);
+          marker.labelDiv.style.background = 'rgba(12,20,30,0.85)';
+          marker.labelDiv.style.color = '#c0d8e8';
+          marker.labelDiv.style.borderLeftColor = '#4a8ab0';
+          marker.ring.material.opacity = 0.5;
+          marker.ring.scale.set(1, 1, 1);
+        }
+      });
+
+      // 相机平滑移动 (保持在地图前方)
+      const targetPos = markers[index].finalPos;
+      
+      // 计算相机位置: 目标点前方一定距离
+      const camOffset = new THREE.Vector3(0, 25, 50);
+      const desiredCamPos = targetPos.clone().add(camOffset);
+      
+      // 平滑过渡 (简单方法: 直接设置, 配合controls的damping)
+      camera.position.lerp(desiredCamPos, 0.6);
+      controls.target.lerp(targetPos, 0.6);
+      controls.update();
+    }
+
+    // 初始化第一个事件
+    setTimeout(() => setActiveEvent(0), 200);
+
+    // ============ 动画 ============
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      
+      const time = Date.now() * 0.002;
+
+      // 标记光晕脉动
+      markers.forEach((marker, i) => {
+        if (i === activeIndex) {
+          const scale = 1.3 + Math.sin(time * 3) * 0.25;
+          marker.glow.scale.set(scale, scale, scale);
+          marker.glow.material.opacity = 0.35 + Math.sin(time * 4) * 0.2;
+        }
+      });
+
+      controls.update();
+      renderer.render(scene, camera);
+      labelRenderer.render(scene, camera);
+    }
+
+    animate();
+
+    // ============ 窗口自适应 ============
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // 阻止面板滚动穿透
+    document.getElementById('timeline-panel').addEventListener('wheel', (e) => {
+      e.stopPropagation();
+    }, { passive: false });
+  </script>
+</body>
+</html>
