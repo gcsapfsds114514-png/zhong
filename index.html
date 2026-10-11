@@ -3,234 +3,408 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D 长征 · 真实地形互动图</title>
+  <title>中国工农红军长征历程 · 3D</title>
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      margin: 0;
       overflow: hidden;
       font-family: 'Microsoft YaHei', 'Inter', sans-serif;
-      background: #000;
-      color: #c8d8e8;
+      background: #0a0806;
+      color: #e8dcc8;
     }
 
-    #timeline-panel {
+    /* 顶部标题栏 */
+    #top-bar {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 300px;
-      height: 100vh;
-      background: linear-gradient(180deg, rgba(16,24,36,0.92), rgba(12,20,30,0.88));
-      backdrop-filter: blur(12px);
-      border-right: 1px solid rgba(100,160,220,0.25);
-      box-shadow: 4px 0 30px rgba(0,0,0,0.6);
+      top: 0; left: 0; right: 0;
+      height: 56px;
+      background: linear-gradient(180deg, rgba(20,15,10,0.95), rgba(20,15,10,0.7));
+      backdrop-filter: blur(10px);
       display: flex;
-      flex-direction: column;
-      z-index: 10;
-      padding: 1.2rem 0 0.8rem 0;
-      border-radius: 0 16px 16px 0;
+      align-items: center;
+      padding: 0 24px;
+      z-index: 20;
+      border-bottom: 1px solid rgba(180,140,80,0.2);
     }
-
-    #timeline-panel h2 {
+    #top-bar .logo {
       font-family: 'Georgia', serif;
       font-size: 1.4rem;
-      text-align: center;
-      margin: 0 0 0.8rem 0;
-      color: #7aaac8;
-      letter-spacing: 5px;
-      border-bottom: 1px solid #2a3a4a;
-      padding-bottom: 0.6rem;
-      text-shadow: 0 0 15px rgba(100,180,240,0.4);
+      font-weight: 700;
+      color: #d4a850;
+      letter-spacing: 4px;
+      margin-right: 16px;
+      text-shadow: 0 0 20px rgba(212,168,80,0.4);
     }
-
-    .timeline-list {
+    #top-bar .dates {
+      font-size: 0.85rem;
+      color: #8a7050;
+      letter-spacing: 2px;
+      margin-right: 24px;
+    }
+    #top-bar .title {
+      font-size: 1rem;
+      color: #c8b498;
+      letter-spacing: 4px;
       flex: 1;
-      overflow-y: auto;
-      padding: 0 0.7rem;
-      scrollbar-width: thin;
-      scrollbar-color: #3a6a8a #1a2430;
+      text-align: center;
     }
-    .timeline-list::-webkit-scrollbar { width: 4px; }
-    .timeline-list::-webkit-scrollbar-track { background: #1a2430; }
-    .timeline-list::-webkit-scrollbar-thumb { background: #3a6a8a; border-radius: 10px; }
-
-    .timeline-item {
-      background: rgba(24,36,48,0.65);
-      border-left: 3px solid #3a7aaa;
-      margin-bottom: 0.6rem;
-      padding: 0.75rem 0.9rem;
-      border-radius: 0 10px 10px 0;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-      color: #a0b8cc;
+    #top-bar .icons {
+      display: flex;
+      gap: 8px;
+      align-items: center;
     }
-    .timeline-item:hover {
-      background: rgba(40,60,80,0.9);
-      border-left-color: #6aaad0;
-      transform: translateX(3px);
-    }
-    .timeline-item.active {
-      background: rgba(30,55,80,0.95);
-      border-left-color: #8ac0e0;
-      box-shadow: 0 0 20px rgba(80,160,240,0.35), inset 0 0 10px rgba(100,180,240,0.15);
-      color: #e0f0ff;
-      transform: scale(1.02);
-    }
-    .timeline-item .date {
-      font-size: 0.7rem;
-      color: #6a9aba;
-      letter-spacing: 1px;
-      font-weight: 600;
-      margin-bottom: 0.2rem;
-    }
-    .timeline-item .title {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #d0e4f4;
-      font-family: 'Georgia', serif;
-    }
-    .timeline-item .desc {
-      font-size: 0.7rem;
-      color: #7a94a8;
-      margin-top: 0.25rem;
-      line-height: 1.35;
-    }
-
-    #info-overlay {
-      position: absolute;
-      bottom: 28px;
-      right: 28px;
-      background: rgba(10,18,28,0.88);
-      backdrop-filter: blur(14px);
-      border: 1px solid rgba(100,160,210,0.35);
-      border-radius: 14px;
-      padding: 1.3rem 1.8rem;
-      max-width: 380px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.7);
-      z-index: 20;
-      color: #c8d8e8;
-      border-left: 5px solid #4a8ab0;
-      pointer-events: none;
-    }
-    #info-overlay .info-date {
-      font-size: 0.8rem;
-      color: #6a9aba;
-      letter-spacing: 2px;
-      margin-bottom: 0.2rem;
-    }
-    #info-overlay .info-title {
-      font-size: 1.6rem;
-      font-family: 'Georgia', serif;
-      font-weight: 700;
-      color: #e0f0ff;
-      margin-bottom: 0.4rem;
-      text-shadow: 0 0 15px rgba(80,160,240,0.4);
-    }
-    #info-overlay .info-desc {
+    #top-bar .icon-btn {
+      width: 32px; height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(60,50,40,0.6);
+      color: #c8b498;
       font-size: 0.9rem;
-      line-height: 1.55;
-      color: #a8c0d4;
+      cursor: pointer;
+      transition: all 0.2s;
     }
-    #info-overlay .info-coord {
-      margin-top: 0.6rem;
+    #top-bar .icon-btn:hover {
+      background: rgba(120,90,50,0.7);
+      color: #e8dcc8;
+    }
+
+    /* 左上角说明 */
+    #left-info {
+      position: absolute;
+      top: 80px; left: 28px;
+      z-index: 15;
+      pointer-events: none;
+    }
+    #left-info .small {
       font-size: 0.7rem;
-      color: #5a7a94;
-      font-family: monospace;
+      color: #8a7050;
+      letter-spacing: 4px;
+      margin-bottom: 6px;
     }
-
-    #main-title {
-      position: absolute;
-      top: 18px;
-      right: 36px;
+    #left-info .big {
       font-family: 'Georgia', serif;
-      font-size: 2.6rem;
+      font-size: 2.4rem;
       font-weight: 700;
-      color: rgba(120,180,220,0.25);
-      letter-spacing: 18px;
-      pointer-events: none;
-      z-index: 5;
-      text-shadow: 0 0 30px rgba(80,160,240,0.3);
-      user-select: none;
+      color: #e8d0a0;
+      letter-spacing: 4px;
+      text-shadow: 0 2px 30px rgba(0,0,0,0.9), 0 0 40px rgba(212,168,80,0.3);
+      line-height: 1.1;
     }
-
-    #hint {
-      position: absolute;
-      bottom: 18px;
-      left: 320px;
-      color: #4a6a84;
+    #left-info .years {
+      font-size: 0.9rem;
+      color: #d4a850;
+      letter-spacing: 3px;
+      margin-top: 8px;
+      margin-bottom: 12px;
+    }
+    #left-info .hint-text {
       font-size: 0.75rem;
-      letter-spacing: 2px;
-      z-index: 5;
-      pointer-events: none;
-      background: rgba(10,16,24,0.5);
-      padding: 4px 14px;
-      border-radius: 20px;
-      border: 1px solid rgba(80,140,190,0.15);
+      color: #a08868;
+      letter-spacing: 1px;
     }
 
+    /* 右侧竖排按钮 */
+    #right-tools {
+      position: absolute;
+      top: 80px; right: 20px;
+      z-index: 15;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: flex-end;
+    }
+    .tool-group {
+      display: flex;
+      gap: 6px;
+      background: rgba(20,15,10,0.75);
+      backdrop-filter: blur(8px);
+      padding: 6px;
+      border-radius: 10px;
+      border: 1px solid rgba(180,140,80,0.2);
+    }
+    .tool-btn {
+      padding: 6px 12px;
+      background: transparent;
+      color: #c8b498;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .tool-btn:hover, .tool-btn.active {
+      background: rgba(212,168,80,0.2);
+      color: #e8d0a0;
+    }
+
+    /* 右下角比例尺 */
+    #scale-info {
+      position: absolute;
+      bottom: 90px; right: 24px;
+      z-index: 15;
+      font-size: 0.7rem;
+      color: #8a7050;
+      letter-spacing: 1px;
+      text-align: right;
+      pointer-events: none;
+    }
+
+    /* 加载提示 */
     #loading {
       position: absolute;
-      top: 50%;
-      left: 50%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      color: #6a9aba;
-      font-size: 1rem;
+      color: #d4a850;
+      font-size: 0.95rem;
       text-align: center;
       z-index: 100;
-      background: rgba(10,18,28,0.9);
-      padding: 20px 40px;
-      border-radius: 16px;
-      border: 1px solid #3a6a8a;
-      pointer-events: none;
+      background: rgba(15,12,8,0.95);
+      padding: 24px 44px;
+      border-radius: 14px;
+      border: 1px solid rgba(180,140,80,0.4);
+      letter-spacing: 2px;
     }
     #loading.hidden { display: none; }
-
     #progress {
-      margin-top: 12px;
-      width: 240px;
-      height: 4px;
-      background: #1a2a3a;
-      border-radius: 4px;
+      margin-top: 14px;
+      width: 260px;
+      height: 3px;
+      background: rgba(60,50,40,0.8);
+      border-radius: 3px;
       overflow: hidden;
     }
     #progress-bar {
       height: 100%;
-      background: linear-gradient(90deg, #4a8ab0, #88ccee);
+      background: linear-gradient(90deg, #b8860b, #f0c060);
       width: 0%;
       transition: width 0.3s;
     }
 
-    @media (max-width: 800px) {
-      #timeline-panel { width: 240px; }
-      #main-title { font-size: 1.6rem; right: 16px; letter-spacing: 8px; }
-      #info-overlay { bottom: 12px; right: 12px; max-width: 250px; padding: 0.9rem 1rem; }
-      #hint { left: 260px; font-size: 0.65rem; }
+    /* 底部时间条 */
+    #bottom-bar {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 76px;
+      background: linear-gradient(0deg, rgba(20,15,10,0.98), rgba(20,15,10,0.85));
+      backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(180,140,80,0.25);
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      padding: 0 60px 0 40px;
+    }
+    #bottom-bar .label {
+      font-size: 0.75rem;
+      color: #8a7050;
+      letter-spacing: 3px;
+      margin-right: 20px;
+      white-space: nowrap;
+    }
+    #timeline-scroll {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      overflow-x: auto;
+      padding: 0 10px;
+      scrollbar-width: none;
+    }
+    #timeline-scroll::-webkit-scrollbar { display: none; }
+
+    .tl-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 18px;
+      cursor: pointer;
+      transition: all 0.25s;
+      border-top: 2px solid transparent;
+      position: relative;
+      white-space: nowrap;
+    }
+    .tl-item:hover {
+      background: rgba(212,168,80,0.08);
+    }
+    .tl-item.active {
+      border-top-color: #d4a850;
+      background: rgba(212,168,80,0.12);
+    }
+    .tl-item .date {
+      font-size: 0.7rem;
+      color: #8a7050;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+      transition: color 0.2s;
+    }
+    .tl-item .name {
+      font-size: 0.9rem;
+      color: #c8b498;
+      font-weight: 600;
+      letter-spacing: 1px;
+      transition: color 0.2s;
+    }
+    .tl-item.active .date { color: #d4a850; }
+    .tl-item.active .name { color: #f0e0c0; }
+
+    /* 时间条两侧箭头 */
+    .nav-arrow {
+      width: 32px; height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #c8b498;
+      cursor: pointer;
+      border-radius: 50%;
+      background: rgba(60,50,40,0.5);
+      font-size: 1.1rem;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .nav-arrow:hover {
+      background: rgba(212,168,80,0.3);
+      color: #f0e0c0;
+    }
+
+    /* 视角切换 */
+    #view-toggle {
+      position: absolute;
+      bottom: 90px; left: 40px;
+      z-index: 15;
+      display: flex;
+      background: rgba(20,15,10,0.75);
+      backdrop-filter: blur(8px);
+      padding: 4px;
+      border-radius: 8px;
+      border: 1px solid rgba(180,140,80,0.2);
+    }
+    #view-toggle button {
+      padding: 5px 14px;
+      background: transparent;
+      color: #a08868;
+      border: none;
+      border-radius: 5px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 1px;
+    }
+    #view-toggle button.active {
+      background: rgba(212,168,80,0.25);
+      color: #e8d0a0;
+    }
+
+    /* 详情浮层（点击标记出现） */
+    #detail-panel {
+      position: absolute;
+      top: 80px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15,12,8,0.95);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(180,140,80,0.4);
+      border-radius: 12px;
+      padding: 16px 28px;
+      z-index: 25;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.4s;
+      text-align: center;
+      max-width: 500px;
+    }
+    #detail-panel.show { opacity: 1; }
+    #detail-panel .d-date {
+      font-size: 0.8rem;
+      color: #d4a850;
+      letter-spacing: 4px;
+      margin-bottom: 6px;
+    }
+    #detail-panel .d-title {
+      font-family: 'Georgia', serif;
+      font-size: 1.6rem;
+      color: #f0e0c0;
+      letter-spacing: 3px;
+      margin-bottom: 8px;
+    }
+    #detail-panel .d-desc {
+      font-size: 0.85rem;
+      color: #b8a488;
+      line-height: 1.6;
+      letter-spacing: 1px;
+    }
+
+    @media (max-width: 900px) {
+      #top-bar .title { display: none; }
+      #left-info .big { font-size: 1.6rem; }
+      #bottom-bar { height: 68px; padding: 0 20px; }
+      .tl-item { padding: 6px 10px; }
+      .tl-item .name { font-size: 0.8rem; }
     }
   </style>
 </head>
 <body>
-  <div id="timeline-panel">
-    <h2>长 征 · 征 途</h2>
-    <div class="timeline-list" id="timelineList"></div>
-    <div style="padding: 0.6rem 1rem 0; font-size: 0.65rem; color: #4a6a84; text-align: center; border-top: 1px solid #1a2a3a;">
-      点击事件查看位置
+
+  <!-- 顶部栏 -->
+  <div id="top-bar">
+    <div class="logo">长征</div>
+    <div class="dates">1934—1936</div>
+    <div class="title">中国工农红军长征历程</div>
+    <div class="icons">
+      <div class="icon-btn">🔊</div>
+      <div class="icon-btn">⛶</div>
     </div>
   </div>
 
-  <div id="main-title">征 途</div>
-  <div id="hint">拖动旋转 · 滚轮缩放 · 点击时间表联动</div>
-
-  <div id="info-overlay">
-    <div class="info-date" id="infoDate">1934年10月</div>
-    <div class="info-title" id="infoTitle">瑞金出发</div>
-    <div class="info-desc" id="infoDesc">中央红军从江西瑞金等地出发，开始战略转移。</div>
-    <div class="info-coord" id="infoCoord">纬度: 25.8°N 经度: 116.0°E</div>
+  <!-- 左上角信息 -->
+  <div id="left-info">
+    <div class="small">长征历史课</div>
+    <div class="big">长征路线</div>
+    <div class="years">1934—1936</div>
+    <div class="hint-text">点击底部事件查看详情</div>
   </div>
 
+  <!-- 右侧工具栏 -->
+  <div id="right-tools">
+    <div class="tool-group">
+      <button class="tool-btn" onclick="zoomIn()">放大</button>
+      <button class="tool-btn" onclick="zoomOut()">缩小</button>
+      <button class="tool-btn" onclick="resetView()">复位</button>
+    </div>
+  </div>
+
+  <!-- 比例尺 -->
+  <div id="scale-info">
+    地图比例尺 1 : 2700万<br>
+    <span style="font-size:0.65rem;">数据来源: NASA SRTM / Esri 卫星影像</span>
+  </div>
+
+  <!-- 视角切换 -->
+  <div id="view-toggle">
+    <button id="btn3d" class="active" onclick="setView('3d')">3D 立体</button>
+    <button id="btnTop" onclick="setView('top')">平面</button>
+  </div>
+
+  <!-- 详情浮层 -->
+  <div id="detail-panel">
+    <div class="d-date" id="dDate">1934年10月</div>
+    <div class="d-title" id="dTitle">瑞金出发</div>
+    <div class="d-desc" id="dDesc">中央红军从江西瑞金等地出发，开始战略转移。</div>
+  </div>
+
+  <!-- 加载 -->
   <div id="loading">
     正在加载真实地形数据...
     <div id="progress"><div id="progress-bar"></div></div>
-    <small style="display:block;margin-top:8px;color:#4a6a84;">数据源: AWS Terrain Tiles (NASA SRTM)</small>
+    <small style="display:block;margin-top:10px;color:#8a7050;font-size:0.7rem;">NASA SRTM 30m 高程数据</small>
+  </div>
+
+  <!-- 底部时间条 -->
+  <div id="bottom-bar">
+    <div class="label">长征大事记</div>
+    <div class="nav-arrow" onclick="scrollTimeline(-1)">‹</div>
+    <div id="timeline-scroll"></div>
+    <div class="nav-arrow" onclick="scrollTimeline(1)">›</div>
   </div>
 
   <script type="importmap">
@@ -249,11 +423,12 @@
 
     // ============ 场景 ============
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x050a10);
-    scene.fog = new THREE.FogExp2(0x050a10, 0.0012);
+    scene.background = new THREE.Color(0x0a0806);
+    scene.fog = new THREE.FogExp2(0x0a0806, 0.0018);
 
-    const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 3000);
-    camera.position.set(0, 80, 140);
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 3000);
+    // 俯视斜角，从东南往西北看
+    camera.position.set(60, 90, 90);
     camera.lookAt(0, 0, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -261,6 +436,8 @@
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.1;
     document.body.appendChild(renderer.domElement);
 
     const labelRenderer = new CSS2DRenderer();
@@ -275,20 +452,21 @@
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.06;
-    controls.maxPolarAngle = Math.PI / 2.1;
-    controls.minDistance = 50;
-    controls.maxDistance = 300;
+    controls.maxPolarAngle = Math.PI / 2.05;
+    controls.minDistance = 60;
+    controls.maxDistance = 280;
     controls.target.set(0, 0, 0);
 
-    // ============ 灯光 ============
-    scene.add(new THREE.AmbientLight(0x5a6a7a, 1.4));
+    // ============ 灯光（暖色调，模拟高原日照） ============
+    scene.add(new THREE.AmbientLight(0x6a5a4a, 1.0));
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    dirLight.position.set(-60, 100, 60);
+    // 主光：暖黄方向光
+    const dirLight = new THREE.DirectionalLight(0xffe8c0, 1.3);
+    dirLight.position.set(-80, 120, 60);
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.width = 2048;
     dirLight.shadow.mapSize.height = 2048;
-    const d = 150;
+    const d = 160;
     dirLight.shadow.camera.left = -d;
     dirLight.shadow.camera.right = d;
     dirLight.shadow.camera.top = d;
@@ -297,26 +475,28 @@
     dirLight.shadow.camera.far = 500;
     scene.add(dirLight);
 
-    const backLight = new THREE.PointLight(0x2a6a9a, 0.6);
-    backLight.position.set(80, 60, -80);
-    scene.add(backLight);
+    // 补光：冷色
+    const fillLight = new THREE.DirectionalLight(0x88aacc, 0.35);
+    fillLight.position.set(60, 40, -80);
+    scene.add(fillLight);
+
+    // 环境暖光
+    const warmLight = new THREE.PointLight(0xb8860b, 0.5);
+    warmLight.position.set(0, 40, 0);
+    scene.add(warmLight);
 
     // ============ 参数 ============
     const LON_MIN = 73, LON_MAX = 136;
     const LAT_MIN = 18, LAT_MAX = 54;
-    
+
     const ZOOM = 5;
-    
-    const GRID_W = 200;
-    const GRID_H = 133;
-    
-    const PLANE_W = 200;
-    const PLANE_H = 133;
+    const GRID_W = 280;
+    const GRID_H = 186;
+    const PLANE_W = 220;
+    const PLANE_H = 146;
+    const HEIGHT_SCALE = 0.0022;
 
-    // 高度缩放
-    const HEIGHT_SCALE = 0.0018;
-
-    // ============ 经纬度→瓦片坐标 ============
+    // ============ 瓦片坐标转换 ============
     function lonLatToTile(lon, lat, zoom) {
       const n = Math.pow(2, zoom);
       const x = Math.floor((lon + 180) / 360 * n);
@@ -325,417 +505,351 @@
       return { x, y };
     }
 
-    // ============ 加载瓦片 ============
+    // ============ 加载高程瓦片（Terrarium） ============
     const loadingEl = document.getElementById('loading');
     const progressBar = document.getElementById('progress-bar');
 
     async function loadTerrainTiles() {
       const topLeft = lonLatToTile(LON_MIN, LAT_MAX, ZOOM);
       const bottomRight = lonLatToTile(LON_MAX, LAT_MIN, ZOOM);
-      
       const x0 = topLeft.x, x1 = bottomRight.x;
       const y0 = topLeft.y, y1 = bottomRight.y;
-      
       const tilesX = x1 - x0 + 1;
       const tilesY = y1 - y0 + 1;
       const totalTiles = tilesX * tilesY;
-      
-      console.log(`需要加载 ${totalTiles} 张瓦片`);
+
+      console.log(`需要加载 ${totalTiles} 张高程瓦片`);
 
       const TILE_SIZE = 256;
       const canvasW = tilesX * TILE_SIZE;
       const canvasH = tilesY * TILE_SIZE;
-      
       const canvas = document.createElement('canvas');
       canvas.width = canvasW;
       canvas.height = canvasH;
       const ctx = canvas.getContext('2d');
-      
+
       let loaded = 0;
-      
       const loadTile = (x, y, px, py) => {
-        return new Promise((resolve) => {
+        return new Promise(resolve => {
           const img = new Image();
           img.crossOrigin = 'anonymous';
           const url = `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${ZOOM}/${x}/${y}.png`;
-          
           img.onload = () => {
             ctx.drawImage(img, px, py);
             loaded++;
-            progressBar.style.width = (loaded / totalTiles * 100) + '%';
+            progressBar.style.width = (loaded/totalTiles*100) + '%';
             resolve();
           };
           img.onerror = () => {
-            console.warn('瓦片加载失败:', url);
             loaded++;
-            progressBar.style.width = (loaded / totalTiles * 100) + '%';
+            progressBar.style.width = (loaded/totalTiles*100) + '%';
             resolve();
           };
           img.src = url;
         });
       };
-      
+
       const promises = [];
       for (let ty = 0; ty < tilesY; ty++) {
         for (let tx = 0; tx < tilesX; tx++) {
-          promises.push(loadTile(x0 + tx, y0 + ty, tx * TILE_SIZE, ty * TILE_SIZE));
+          promises.push(loadTile(x0+tx, y0+ty, tx*TILE_SIZE, ty*TILE_SIZE));
         }
       }
-      
       await Promise.all(promises);
-      
-      // 解析 Terrarium
+
+      // 解析 Terrarium 高程
       const heightData = new Float32Array(canvasW * canvasH);
       const imgData = ctx.getImageData(0, 0, canvasW, canvasH).data;
       for (let i = 0; i < canvasW * canvasH; i++) {
         const r = imgData[i*4];
         const g = imgData[i*4+1];
         const b = imgData[i*4+2];
-        const elevation = (r * 256 + g + b / 256) - 32768;
-        heightData[i] = elevation;
+        heightData[i] = (r*256 + g + b/256) - 32768;
       }
-      
       return { heightData, canvasW, canvasH };
     }
 
-    // ============ 加载你的地形图照片 ============
-    function loadPhotoTexture() {
-      return new Promise((resolve) => {
-        const loader = new THREE.TextureLoader();
-        loader.crossOrigin = 'anonymous';
-        loader.load(
-          'terrain.jpg',
-          (texture) => {
-            texture.encoding = THREE.sRGBEncoding;
-            texture.anisotropy = 16;
-            resolve(texture);
-          },
-          undefined,
-          () => {
-            // 加载失败：用纯色兜底
-            console.warn('未找到 terrain.jpg，使用纯色纹理');
-            const canvas = document.createElement('canvas');
-            canvas.width = 800; canvas.height = 545;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#4a5a4a';
-            ctx.fillRect(0, 0, 800, 545);
-            ctx.fillStyle = '#aaccee';
-            ctx.font = 'bold 40px serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('未找到 terrain.jpg', 400, 260);
-            const fallback = new THREE.CanvasTexture(canvas);
-            fallback.encoding = THREE.sRGBEncoding;
-            resolve(fallback);
-          }
-        );
-      });
+    // ============ 加载卫星纹理（Esri 免费瓦片） ============
+    async function loadSatelliteTexture() {
+      const topLeft = lonLatToTile(LON_MIN, LAT_MAX, ZOOM);
+      const bottomRight = lonLatToTile(LON_MAX, LAT_MIN, ZOOM);
+      const x0 = topLeft.x, x1 = bottomRight.x;
+      const y0 = topLeft.y, y1 = bottomRight.y;
+      const tilesX = x1 - x0 + 1;
+      const tilesY = y1 - y0 + 1;
+      const TILE_SIZE = 256;
+      const canvasW = tilesX * TILE_SIZE;
+      const canvasH = tilesY * TILE_SIZE;
+      const canvas = document.createElement('canvas');
+      canvas.width = canvasW;
+      canvas.height = canvasH;
+      const ctx = canvas.getContext('2d');
+
+      const loadTile = (x, y, px, py) => {
+        return new Promise(resolve => {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          // Esri 世界影像服务（免费，无需 key）
+          const url = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${ZOOM}/${y}/${x}`;
+          img.onload = () => {
+            ctx.drawImage(img, px, py);
+            resolve();
+          };
+          img.onerror = () => resolve();
+          img.src = url;
+        });
+      };
+
+      const promises = [];
+      for (let ty = 0; ty < tilesY; ty++) {
+        for (let tx = 0; tx < tilesX; tx++) {
+          promises.push(loadTile(x0+tx, y0+ty, tx*TILE_SIZE, ty*TILE_SIZE));
+        }
+      }
+      await Promise.all(promises);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.encoding = THREE.sRGBEncoding;
+      texture.anisotropy = 16;
+      return texture;
     }
 
-    // ============ 创建地形 ============
-    function createTerrain(heightData, canvasW, canvasH, photoTexture) {
+    // ============ 中国简化轮廓（用于裁剪地形） ============
+    // 经纬度坐标数组 [lon, lat]，大致勾勒中国边界
+    const CHINA_OUTLINE = [
+      [73.5, 39.4], [74.9, 37.0], [75.0, 36.7], [76.0, 35.5], [78.0, 35.5],
+      [79.0, 34.0], [78.8, 33.5], [79.5, 32.5], [81.0, 30.3], [82.0, 30.3],
+      [85.0, 28.2], [88.0, 27.9], [89.0, 28.0], [91.5, 27.8], [94.0, 27.7],
+      [95.5, 28.0], [97.0, 28.3], [98.5, 27.5], [98.7, 26.0], [97.5, 24.0],
+      [99.0, 22.5], [101.0, 22.4], [102.0, 22.4], [103.5, 22.6], [105.0, 22.8],
+      [106.5, 22.0], [108.0, 21.5], [109.5, 21.5], [110.0, 21.0], [112.0, 21.5],
+      [113.5, 22.2], [114.5, 22.5], [116.0, 22.8], [117.5, 23.8], [119.0, 25.0],
+      [120.0, 26.5], [121.0, 28.0], [121.5, 30.0], [121.9, 31.0], [120.5, 32.5],
+      [119.5, 34.5], [120.0, 36.0], [122.0, 37.0], [122.5, 39.0], [121.0, 40.0],
+      [119.0, 39.5], [118.0, 39.0], [117.5, 38.5], [119.0, 37.5], [122.5, 37.5],
+      [122.0, 40.5], [124.0, 40.0], [126.0, 41.5], [128.0, 42.0], [130.5, 42.5],
+      [131.5, 44.5], [133.0, 45.0], [134.5, 48.3], [130.0, 48.5], [127.5, 50.0],
+      [125.5, 53.0], [120.0, 53.5], [117.0, 49.5], [115.5, 47.8], [111.5, 44.5],
+      [105.0, 41.8], [96.5, 42.8], [90.5, 45.0], [87.5, 49.2], [85.5, 47.0],
+      [83.0, 47.2], [80.5, 45.0], [80.0, 42.5], [76.5, 41.0], [74.0, 40.5],
+      [73.5, 39.4]
+    ];
+
+    // 判断一个经纬度点是否在中国轮廓内（射线法）
+    function isInsideChina(lon, lat) {
+      let inside = false;
+      const poly = CHINA_OUTLINE;
+      for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+        const xi = poly[i][0], yi = poly[i][1];
+        const xj = poly[j][0], yj = poly[j][1];
+        const intersect = ((yi > lat) !== (yj > lat)) &&
+          (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi);
+        if (intersect) inside = !inside;
+      }
+      return inside;
+    }
+
+    // ============ 创建地形（带中国轮廓裁剪） ============
+    let terrainMesh = null;
+
+    function createTerrain(heightData, canvasW, canvasH, satTexture) {
+      // 细分网格（比之前更细，让轮廓边缘更平滑）
       const geometry = new THREE.PlaneGeometry(PLANE_W, PLANE_H, GRID_W - 1, GRID_H - 1);
       geometry.rotateX(-Math.PI / 2);
-      
+
       const positions = geometry.attributes.position;
-      
+
+      // 遍历顶点，设置高度
       for (let i = 0; i < positions.count; i++) {
         const x = positions.getX(i);
         const z = positions.getZ(i);
-        
+
         const u = (x / PLANE_W) + 0.5;
         const v = (z / PLANE_H) + 0.5;
-        
-        const sx = Math.min(canvasW - 1, Math.max(0, Math.floor(u * canvasW)));
-        const sy = Math.min(canvasH - 1, Math.max(0, Math.floor(v * canvasH)));
-        
-        const elevation = heightData[sy * canvasW + sx];
-        const h = Math.max(0, elevation) * HEIGHT_SCALE;
-        
+
+        const lon = LON_MIN + u * (LON_MAX - LON_MIN);
+        const lat = LAT_MAX - v * (LAT_MAX - LAT_MIN);
+
+        let h = 0;
+        if (isInsideChina(lon, lat)) {
+          const sx = Math.min(canvasW - 1, Math.max(0, Math.floor(u * canvasW)));
+          const sy = Math.min(canvasH - 1, Math.max(0, Math.floor(v * canvasH)));
+          const elevation = heightData[sy * canvasW + sx];
+          h = Math.max(0, elevation) * HEIGHT_SCALE;
+        }
+        // 轮廓外高度为0（海平面）
         positions.setY(i, h);
       }
-      
+
       geometry.computeVertexNormals();
-      
-      // 关键：用照片作为贴图
+
+      // 材质：卫星影像 + 暖色调
       const material = new THREE.MeshStandardMaterial({
-        map: photoTexture,        // 你的地形图照片
-        roughness: 0.8,
-        metalness: 0.08,
-        emissive: new THREE.Color(0x1a2a3a),
-        emissiveIntensity: 0.1,
+        map: satTexture,
+        roughness: 0.92,
+        metalness: 0.05,
+        emissive: new THREE.Color(0x1a1008),
+        emissiveIntensity: 0.15,
         side: THREE.DoubleSide,
       });
-      
-      const terrain = new THREE.Mesh(geometry, material);
-      terrain.castShadow = true;
-      terrain.receiveShadow = true;
-      scene.add(terrain);
-      
-      window.__terrainData = {
-        heightData,
-        canvasW,
-        canvasH,
-        PLANE_W,
-        PLANE_H,
-        HEIGHT_SCALE,
-      };
-      
-      return terrain;
+
+      terrainMesh = new THREE.Mesh(geometry, material);
+      terrainMesh.castShadow = true;
+      terrainMesh.receiveShadow = true;
+      scene.add(terrainMesh);
+
+      // ============ 创建侧壁（让中国轮廓有厚度，像一块浮雕） ============
+      createSideWalls(heightData, canvasW, canvasH, satTexture);
+
+      window.__terrainData = { heightData, canvasW, canvasH };
+      return terrainMesh;
     }
 
-    // ============ 坐标映射 ============
+    // ============ 侧壁（用轮廓线生成垂直面） ============
+    function createSideWalls(heightData, canvasW, canvasH, satTexture) {
+      // 沿轮廓生成一圈垂直墙
+      const wallGeoPositions = [];
+      const wallUvs = [];
+      const depth = 4; // 侧壁深度
+
+      for (let i = 0; i < CHINA_OUTLINE.length; i++) {
+        const [lon1, lat1] = CHINA_OUTLINE[i];
+        const [lon2, lat2] = CHINA_OUTLINE[(i + 1) % CHINA_OUTLINE.length];
+
+        // 转换为平面坐标
+        const u1 = (lon1 - LON_MIN) / (LON_MAX - LON_MIN);
+        const v1 = 1 - (lat1 - LAT_MIN) / (LAT_MAX - LAT_MIN);
+        const x1 = (u1 - 0.5) * PLANE_W;
+        const z1 = (v1 - 0.5) * PLANE_H;
+
+        const u2 = (lon2 - LON_MIN) / (LON_MAX - LON_MIN);
+        const v2 = 1 - (lat2 - LAT_MIN) / (LAT_MAX - LAT_MIN);
+        const x2 = (u2 - 0.5) * PLANE_W;
+        const z2 = (v2 - 0.5) * PLANE_H;
+
+        // 取两点中间的高度
+        const su1 = Math.min(canvasW-1, Math.max(0, Math.floor(u1 * canvasW)));
+        const sv1 = Math.min(canvasH-1, Math.max(0, Math.floor(v1 * canvasH)));
+        const h1 = Math.max(0, heightData[sv1 * canvasW + su1]) * HEIGHT_SCALE;
+
+        // 构造四边形（两个三角形）作为侧壁
+        // 顶点顺序: 顶1, 顶2, 底2, 底1
+        const top1 = [x1, h1, z1];
+        const top2 = [x2, h1, z2];
+        const bot1 = [x1, h1 - depth, z1];
+        const bot2 = [x2, h1 - depth, z2];
+
+        // 三角形1: top1, top2, bot2
+        wallGeoPositions.push(...top1, ...top2, ...bot2);
+        // 三角形2: top1, bot2, bot1
+        wallGeoPositions.push(...top1, ...bot2, ...bot1);
+
+        // UV 简单处理
+        wallUvs.push(u1, 1, u2, 1, u2, 0);
+        wallUvs.push(u1, 1, u2, 0, u1, 0);
+      }
+
+      const wallGeo = new THREE.BufferGeometry();
+      wallGeo.setAttribute('position', new THREE.Float32BufferAttribute(wallGeoPositions, 3));
+      wallGeo.setAttribute('uv', new THREE.Float32BufferAttribute(wallUvs, 2));
+      wallGeo.computeVertexNormals();
+
+      // 侧壁用深棕色岩石色（不用卫星纹理，因为侧壁纹理拉伸会很难看）
+      const wallMat = new THREE.MeshStandardMaterial({
+        color: 0x4a3020,
+        roughness: 0.95,
+        metalness: 0.05,
+        side: THREE.DoubleSide,
+        emissive: new THREE.Color(0x1a0e06),
+        emissiveIntensity: 0.3,
+      });
+
+      const walls = new THREE.Mesh(wallGeo, wallMat);
+      walls.castShadow = true;
+      walls.receiveShadow = true;
+      scene.add(walls);
+
+      // 底板（在侧壁底下封口）
+      createBottomPlate();
+    }
+
+    // ============ 底板 ============
+    function createBottomPlate() {
+      // 用轮廓直接生成一个平的 Shape，位于地形最底部
+      const shape = new THREE.Shape();
+      CHINA_OUTLINE.forEach(([lon, lat], i) => {
+        const u = (lon - LON_MIN) / (LON_MAX - LON_MIN);
+        const v = 1 - (lat - LAT_MIN) / (LAT_MAX - LAT_MIN);
+        const x = (u - 0.5) * PLANE_W;
+        const z = (v - 0.5) * PLANE_H;
+        // Shape 用的是 XY 平面，我们要在 XZ 平面，所以用 x 和 -z
+        if (i === 0) shape.moveTo(x, -z);
+        else shape.lineTo(x, -z);
+      });
+      shape.closePath();
+
+      const plateGeo = new THREE.ShapeGeometry(shape);
+      const plateMat = new THREE.MeshStandardMaterial({
+        color: 0x2a1a10,
+        roughness: 0.95,
+        metalness: 0.05,
+        side: THREE.DoubleSide,
+      });
+      const plate = new THREE.Mesh(plateGeo, plateMat);
+      plate.rotation.x = -Math.PI / 2;
+      plate.position.y = -4.5;
+      plate.receiveShadow = true;
+      scene.add(plate);
+    }
+
+    // ============ 坐标映射（供第二段用） ============
     function geoToLocal3D(lon, lat) {
       const u = (lon - LON_MIN) / (LON_MAX - LON_MIN);
       const v = 1 - (lat - LAT_MIN) / (LAT_MAX - LAT_MIN);
-      
       const x = (u - 0.5) * PLANE_W;
       const z = (v - 0.5) * PLANE_H;
-      
       let y = 0;
       if (window.__terrainData) {
-        const { heightData, canvasW, canvasH, HEIGHT_SCALE } = window.__terrainData;
+        const { heightData, canvasW, canvasH } = window.__terrainData;
         const sx = Math.min(canvasW - 1, Math.max(0, Math.floor(u * canvasW)));
         const sy = Math.min(canvasH - 1, Math.max(0, Math.floor(v * canvasH)));
         y = Math.max(0, heightData[sy * canvasW + sx]) * HEIGHT_SCALE;
       }
-      
       return new THREE.Vector3(x, y, z);
     }
 
-    // ============ 长征事件 ============
-    const events = [
-      { date: '1934年10月', title: '瑞金出发', desc: '中央红军从江西瑞金等地出发，开始战略转移。', coord: '25.8°N, 116.0°E', lon: 116.0, lat: 25.8 },
-      { date: '1934年11月', title: '湘江战役', desc: '红军突破第四道封锁线，损失惨重。', coord: '25.5°N, 111.0°E', lon: 111.0, lat: 25.5 },
-      { date: '1935年1月', title: '遵义会议', desc: '确立毛泽东同志的领导地位，是长征转折点。', coord: '27.7°N, 106.9°E', lon: 106.9, lat: 27.7 },
-      { date: '1935年2月', title: '四渡赤水', desc: '机动灵活，摆脱国民党军追堵。', coord: '28.1°N, 105.8°E', lon: 105.8, lat: 28.1 },
-      { date: '1935年5月', title: '巧渡金沙江', desc: '摆脱数十万敌军围追堵截。', coord: '26.5°N, 102.0°E', lon: 102.0, lat: 26.5 },
-      { date: '1935年5月', title: '飞夺泸定桥', desc: '22勇士冒火夺取铁索桥。', coord: '29.9°N, 102.2°E', lon: 102.2, lat: 29.9 },
-      { date: '1935年6月', title: '翻越夹金山', desc: '征服第一座大雪山。', coord: '30.8°N, 102.7°E', lon: 102.7, lat: 30.8 },
-      { date: '1935年8月', title: '穿过草地', desc: '艰难穿越松潘草地，牺牲巨大。', coord: '33.0°N, 102.5°E', lon: 102.5, lat: 33.0 },
-      { date: '1935年10月', title: '抵达吴起镇', desc: '中央红军到达陕北，长征胜利结束。', coord: '36.9°N, 108.2°E', lon: 108.2, lat: 36.9 },
-    ];
+    // 暴露给第二段代码使用
+    window.__THREE_CTX = {
+      scene, camera, renderer, controls, labelRenderer,
+      geoToLocal3D, PLANE_W, PLANE_H,
+      LON_MIN, LON_MAX, LAT_MIN, LAT_MAX,
+      THREE,
+    };
 
-    // ============ 创建标记与路线 ============
-    const markers = [];
-
-    function createMarkersAndRoutes() {
-      const worldPositions = events.map(e => geoToLocal3D(e.lon, e.lat));
-      
-      events.forEach((event, index) => {
-        const pos = worldPositions[index];
-        const spherePos = pos.clone();
-        spherePos.y += 3.0;
-        
-        const sphereGeo = new THREE.SphereGeometry(1.5, 20, 20);
-        const sphereMat = new THREE.MeshStandardMaterial({
-          color: 0x5a9ac0,
-          emissive: new THREE.Color(0x2a6a9a),
-          emissiveIntensity: 1.6,
-          roughness: 0.25,
-          metalness: 0.3,
-        });
-        const sphere = new THREE.Mesh(sphereGeo, sphereMat);
-        sphere.position.copy(spherePos);
-        sphere.castShadow = true;
-        scene.add(sphere);
-        
-        const glowGeo = new THREE.SphereGeometry(2.8, 12, 12);
-        const glowMat = new THREE.MeshBasicMaterial({
-          color: 0x6ab0d0,
-          transparent: true,
-          opacity: 0.12,
-          wireframe: true,
-        });
-        const glow = new THREE.Mesh(glowGeo, glowMat);
-        glow.position.copy(spherePos);
-        scene.add(glow);
-        
-        const pillarGeo = new THREE.CylinderGeometry(0.1, 0.18, 3.0, 8);
-        const pillarMat = new THREE.MeshStandardMaterial({
-          color: 0x7ab0d0,
-          emissive: new THREE.Color(0x1a4a6a),
-          transparent: true,
-          opacity: 0.6,
-        });
-        const pillar = new THREE.Mesh(pillarGeo, pillarMat);
-        pillar.position.set(pos.x, pos.y + 1.5, pos.z);
-        scene.add(pillar);
-        
-        const ringGeo = new THREE.RingGeometry(1.8, 2.3, 32);
-        const ringMat = new THREE.MeshBasicMaterial({
-          color: 0x4a8ab0,
-          transparent: true,
-          opacity: 0.5,
-          side: THREE.DoubleSide,
-        });
-        const ring = new THREE.Mesh(ringGeo, ringMat);
-        ring.position.copy(pos);
-        ring.rotation.x = -Math.PI / 2;
-        scene.add(ring);
-        
-        const labelDiv = document.createElement('div');
-        labelDiv.textContent = `${index+1}. ${event.title}`;
-        labelDiv.style.color = '#c0d8e8';
-        labelDiv.style.fontSize = '12px';
-        labelDiv.style.fontWeight = 'bold';
-        labelDiv.style.textShadow = '1px 1px 4px #000';
-        labelDiv.style.background = 'rgba(12,20,30,0.85)';
-        labelDiv.style.padding = '3px 12px';
-        labelDiv.style.borderRadius = '20px';
-        labelDiv.style.borderLeft = '3px solid #4a8ab0';
-        labelDiv.style.whiteSpace = 'nowrap';
-        labelDiv.style.pointerEvents = 'none';
-        
-        const label = new CSS2DObject(labelDiv);
-        label.position.set(spherePos.x, spherePos.y + 3.5, spherePos.z);
-        scene.add(label);
-        
-        markers.push({ sphere, glow, labelDiv, finalPos: spherePos, ring, event });
-      });
-      
-      const routePoints = worldPositions.map(p => {
-        const np = p.clone();
-        np.y += 3.0;
-        return np;
-      });
-      
-      const curve = new THREE.CatmullRomCurve3(routePoints);
-      
-      const tubeGeo = new THREE.TubeGeometry(curve, 200, 0.5, 8, false);
-      const tubeMat = new THREE.MeshStandardMaterial({
-        color: 0x4a8aaa,
-        emissive: new THREE.Color(0x1a4a6a),
-        roughness: 0.3,
-        metalness: 0.2,
-        transparent: true,
-        opacity: 0.9,
-      });
-      const tube = new THREE.Mesh(tubeGeo, tubeMat);
-      scene.add(tube);
-      
-      const tubeGlowGeo = new THREE.TubeGeometry(curve, 200, 0.22, 6, false);
-      const tubeGlowMat = new THREE.MeshStandardMaterial({
-        color: 0x88ccee,
-        emissive: new THREE.Color(0x4488bb),
-        transparent: true,
-        opacity: 0.6,
-      });
-      const tubeGlow = new THREE.Mesh(tubeGlowGeo, tubeGlowMat);
-      scene.add(tubeGlow);
-    }
-
-    // ============ 时间表 UI ============
-    const timelineList = document.getElementById('timelineList');
-    events.forEach((event, index) => {
-      const item = document.createElement('div');
-      item.className = 'timeline-item' + (index === 0 ? ' active' : '');
-      item.dataset.index = index;
-      item.innerHTML = `
-        <div class="date">${event.date}</div>
-        <div class="title">${event.title}</div>
-        <div class="desc">${event.desc}</div>
-      `;
-      item.addEventListener('click', () => setActiveEvent(index));
-      timelineList.appendChild(item);
-    });
-
-    const infoDate = document.getElementById('infoDate');
-    const infoTitle = document.getElementById('infoTitle');
-    const infoDesc = document.getElementById('infoDesc');
-    const infoCoord = document.getElementById('infoCoord');
-
-    let activeIndex = -1;
-
-    function setActiveEvent(index) {
-      if (index === activeIndex) return;
-      activeIndex = index;
-      
-      document.querySelectorAll('.timeline-item').forEach((item, i) => {
-        item.classList.toggle('active', i === index);
-      });
-      
-      const ev = events[index];
-      infoDate.textContent = ev.date;
-      infoTitle.textContent = ev.title;
-      infoDesc.textContent = ev.desc;
-      infoCoord.textContent = `纬度: ${ev.coord.split(',')[0]}  经度: ${ev.coord.split(',')[1]}`;
-      
-      markers.forEach((marker, i) => {
-        if (i === index) {
-          marker.sphere.material.emissiveIntensity = 3.0;
-          marker.sphere.scale.set(1.5, 1.5, 1.5);
-          marker.glow.material.opacity = 0.5;
-          marker.glow.scale.set(1.4, 1.4, 1.4);
-          marker.labelDiv.style.background = 'rgba(60,120,180,0.95)';
-          marker.labelDiv.style.color = '#fff';
-          marker.labelDiv.style.borderLeftColor = '#88ccee';
-          marker.ring.material.opacity = 0.9;
-          marker.ring.scale.set(1.3, 1.3, 1.3);
-        } else {
-          marker.sphere.material.emissiveIntensity = 1.6;
-          marker.sphere.scale.set(1, 1, 1);
-          marker.glow.material.opacity = 0.12;
-          marker.glow.scale.set(1, 1, 1);
-          marker.labelDiv.style.background = 'rgba(12,20,30,0.85)';
-          marker.labelDiv.style.color = '#c0d8e8';
-          marker.labelDiv.style.borderLeftColor = '#4a8ab0';
-          marker.ring.material.opacity = 0.5;
-          marker.ring.scale.set(1, 1, 1);
-        }
-      });
-      
-      const targetPos = markers[index].finalPos;
-      controls.target.copy(targetPos);
-      const camOffset = new THREE.Vector3(0, 35, 55);
-      camera.position.copy(targetPos.clone().add(camOffset));
-      controls.update();
-    }
-
-    // ============ 主流程 ============
+    // ============ 初始化 ============
     async function init() {
       try {
-        // 并行：加载瓦片 + 加载照片
-        const [terrainResult, photoTexture] = await Promise.all([
+        const [terrainResult, satTexture] = await Promise.all([
           loadTerrainTiles(),
-          loadPhotoTexture(),
+          loadSatelliteTexture(),
         ]);
-        
-        const { heightData, canvasW, canvasH } = terrainResult;
-        
-        // 创建地形（照片作为纹理）
-        createTerrain(heightData, canvasW, canvasH, photoTexture);
-        
-        // 创建标记和路线
-        createMarkersAndRoutes();
-        
+        createTerrain(terrainResult.heightData, terrainResult.canvasW, terrainResult.canvasH, satTexture);
         loadingEl.classList.add('hidden');
-        
-        setTimeout(() => setActiveEvent(0), 300);
-        
+        // 触发第二段初始化（标记/路线/时间条）
+        if (window.__initPart2) window.__initPart2();
       } catch (err) {
         console.error('加载失败:', err);
-        loadingEl.innerHTML = '地形数据加载失败<br><small style="color:#4a6a84;">请检查网络连接</small>';
+        loadingEl.innerHTML = '地形加载失败<br><small style="color:#8a7050;">请检查网络</small>';
       }
     }
 
-    // ============ 动画 ============
+    // ============ 动画循环 ============
     function animate() {
       requestAnimationFrame(animate);
-      
-      const time = Date.now() * 0.002;
-      markers.forEach((marker, i) => {
-        if (i === activeIndex) {
-          const scale = 1.3 + Math.sin(time * 3) * 0.25;
-          marker.glow.scale.set(scale, scale, scale);
-          marker.glow.material.opacity = 0.35 + Math.sin(time * 4) * 0.2;
-        }
-      });
-      
       controls.update();
       renderer.render(scene, camera);
       labelRenderer.render(scene, camera);
     }
-
     animate();
 
     // ============ 窗口自适应 ============
@@ -746,11 +860,393 @@
       labelRenderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    document.getElementById('timeline-panel').addEventListener('wheel', (e) => {
-      e.stopPropagation();
-    }, { passive: false });
+    // 视角切换和缩放按钮（暴露到全局给 HTML onclick）
+    window.zoomIn = () => {
+      const dir = camera.position.clone().sub(controls.target);
+      camera.position.copy(controls.target.clone().add(dir.multiplyScalar(0.85)));
+    };
+    window.zoomOut = () => {
+      const dir = camera.position.clone().sub(controls.target);
+      camera.position.copy(controls.target.clone().add(dir.multiplyScalar(1.15)));
+    };
+    window.resetView = () => {
+      camera.position.set(60, 90, 90);
+      controls.target.set(0, 0, 0);
+    };
+    window.setView = (mode) => {
+      document.querySelectorAll('#view-toggle button').forEach(b => b.classList.remove('active'));
+      if (mode === '3d') {
+        document.getElementById('btn3d').classList.add('active');
+        camera.position.set(60, 90, 90);
+      } else {
+        document.getElementById('btnTop').classList.add('active');
+        camera.position.set(0, 140, 1);
+      }
+      controls.target.set(0, 0, 0);
+    };
 
     init();
   </script>
+  <script type="module">
+  // ============ 第二段：标记、路线、时间条交互 ============
+
+  // 等第一段的 THREE 上下文就绪
+  function waitForCtx() {
+    return new Promise(resolve => {
+      const check = () => {
+        if (window.__THREE_CTX) resolve(window.__THREE_CTX);
+        else setTimeout(check, 100);
+      };
+      check();
+    });
+  }
+
+  waitForCtx().then((ctx) => {
+    const {
+      scene, camera, renderer, controls, labelRenderer,
+      geoToLocal3D, THREE,
+    } = ctx;
+
+    // ============ 长征事件数据 ============
+    const events = [
+      { date: '1934年10月', title: '瑞金出发',      desc: '中央红军从江西瑞金等地出发，开始战略转移。', lon: 116.0, lat: 25.8, color: 0xff6b4a },
+      { date: '1934年11月', title: '突破湘江',      desc: '红军突破第四道封锁线，损失惨重。',           lon: 111.0, lat: 25.5, color: 0xff6b4a },
+      { date: '1935年1月',  title: '遵义会议',      desc: '确立毛泽东同志的领导地位，是长征转折点。',   lon: 106.9, lat: 27.7, color: 0xffcc44 },
+      { date: '1935年2月',  title: '四渡赤水',      desc: '机动灵活，摆脱国民党军追堵。',               lon: 105.8, lat: 28.1, color: 0xff6b4a },
+      { date: '1935年5月',  title: '巧渡金沙江',    desc: '摆脱数十万敌军围追堵截。',                   lon: 102.0, lat: 26.5, color: 0xff6b4a },
+      { date: '1935年5月',  title: '飞夺泸定桥',    desc: '22勇士冒火夺取铁索桥。',                     lon: 102.2, lat: 29.9, color: 0xff6b4a },
+      { date: '1935年6月',  title: '翻越夹金山',    desc: '征服第一座大雪山。',                         lon: 102.7, lat: 30.8, color: 0x88ccff },
+      { date: '1935年8月',  title: '走过草地',      desc: '艰难穿越松潘草地，牺牲巨大。',               lon: 102.5, lat: 33.0, color: 0x88ccff },
+      { date: '1935年10月', title: '到达吴起镇',    desc: '中央红军到达陕北，长征胜利结束。',           lon: 108.2, lat: 36.9, color: 0xffcc44 },
+      { date: '1936年10月', title: '会宁会师',      desc: '红一、红二、红四方面军胜利会师。',           lon: 105.0, lat: 35.7, color: 0xffcc44 },
+    ];
+
+    // ============ 创建标记点 ============
+    const markers = [];
+    const markerGroup = new THREE.Group();
+    scene.add(markerGroup);
+
+    // 每个点的世界坐标
+    const worldPositions = events.map(e => geoToLocal3D(e.lon, e.lat));
+
+    events.forEach((event, index) => {
+      const pos = worldPositions[index];
+
+      // === 发光球体（浮在地形之上） ===
+      const spherePos = pos.clone();
+      spherePos.y += 2.5;
+
+      const sphereGeo = new THREE.SphereGeometry(1.3, 20, 20);
+      const sphereMat = new THREE.MeshStandardMaterial({
+        color: event.color,
+        emissive: new THREE.Color(event.color),
+        emissiveIntensity: 1.8,
+        roughness: 0.25,
+        metalness: 0.3,
+      });
+      const sphere = new THREE.Mesh(sphereGeo, sphereMat);
+      sphere.position.copy(spherePos);
+      sphere.castShadow = true;
+      sphere.userData.eventIndex = index;
+      sphere.userData.isMarker = true;
+      markerGroup.add(sphere);
+
+      // === 光晕 ===
+      const glowGeo = new THREE.SphereGeometry(2.6, 12, 12);
+      const glowMat = new THREE.MeshBasicMaterial({
+        color: event.color,
+        transparent: true,
+        opacity: 0.12,
+        wireframe: true,
+      });
+      const glow = new THREE.Mesh(glowGeo, glowMat);
+      glow.position.copy(spherePos);
+      markerGroup.add(glow);
+
+      // === 光柱（连接地面和球体） ===
+      const pillarHeight = 2.5;
+      const pillarGeo = new THREE.CylinderGeometry(0.08, 0.16, pillarHeight, 8);
+      const pillarMat = new THREE.MeshStandardMaterial({
+        color: event.color,
+        emissive: new THREE.Color(event.color),
+        emissiveIntensity: 0.5,
+        transparent: true,
+        opacity: 0.6,
+      });
+      const pillar = new THREE.Mesh(pillarGeo, pillarMat);
+      pillar.position.set(pos.x, pos.y + pillarHeight/2, pos.z);
+      markerGroup.add(pillar);
+
+      // === 地面圆环 ===
+      const ringGeo = new THREE.RingGeometry(1.6, 2.1, 32);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: event.color,
+        transparent: true,
+        opacity: 0.55,
+        side: THREE.DoubleSide,
+      });
+      const ring = new THREE.Mesh(ringGeo, ringMat);
+      ring.position.copy(pos);
+      ring.rotation.x = -Math.PI / 2;
+      markerGroup.add(ring);
+
+      // === CSS 标签（名称） ===
+      const labelDiv = document.createElement('div');
+      labelDiv.textContent = event.title;
+      labelDiv.style.color = '#f0e0c0';
+      labelDiv.style.fontSize = '12px';
+      labelDiv.style.fontWeight = 'bold';
+      labelDiv.style.textShadow = '0 1px 4px #000, 0 0 8px rgba(0,0,0,0.8)';
+      labelDiv.style.background = 'rgba(20,15,10,0.85)';
+      labelDiv.style.padding = '3px 10px';
+      labelDiv.style.borderRadius = '4px';
+      labelDiv.style.borderLeft = `3px solid #${event.color.toString(16).padStart(6,'0')}`;
+      labelDiv.style.whiteSpace = 'nowrap';
+      labelDiv.style.pointerEvents = 'none';
+      labelDiv.style.letterSpacing = '1px';
+
+      const label = new CSS2DObject(labelDiv);
+      label.position.set(spherePos.x, spherePos.y + 3.2, spherePos.z);
+      markerGroup.add(label);
+
+      markers.push({
+        sphere, glow, pillar, ring, label, labelDiv,
+        pos, spherePos, event, index,
+      });
+    });
+
+    // ============ 长征路线（多段曲线） ============
+    // 按时间顺序连接
+    const routePoints = worldPositions.map(p => {
+      const np = p.clone();
+      np.y += 2.5;
+      return np;
+    });
+
+    const curve = new THREE.CatmullRomCurve3(routePoints, false, 'catmullrom', 0.15);
+    const routeGroup = new THREE.Group();
+    scene.add(routeGroup);
+
+    // 主路线：暗红色
+    const tubeGeo = new THREE.TubeGeometry(curve, 300, 0.55, 8, false);
+    const tubeMat = new THREE.MeshStandardMaterial({
+      color: 0x8a1a1a,
+      emissive: new THREE.Color(0x4a0a0a),
+      emissiveIntensity: 0.8,
+      roughness: 0.4,
+      metalness: 0.2,
+      transparent: true,
+      opacity: 0.95,
+    });
+    const tube = new THREE.Mesh(tubeGeo, tubeMat);
+    tube.castShadow = false;
+    routeGroup.add(tube);
+
+    // 亮色高光层
+    const tubeGlowGeo = new THREE.TubeGeometry(curve, 300, 0.25, 6, false);
+    const tubeGlowMat = new THREE.MeshStandardMaterial({
+      color: 0xff4433,
+      emissive: new THREE.Color(0xff2200),
+      emissiveIntensity: 1.2,
+      transparent: true,
+      opacity: 0.7,
+    });
+    const tubeGlow = new THREE.Mesh(tubeGlowGeo, tubeGlowMat);
+    tubeGlow.castShadow = false;
+    routeGroup.add(tubeGlow);
+
+    // 路线上的流动小点（表示行军方向）
+    const flowDotCount = 12;
+    const flowDots = [];
+    for (let i = 0; i < flowDotCount; i++) {
+      const dotGeo = new THREE.SphereGeometry(0.35, 8, 8);
+      const dotMat = new THREE.MeshBasicMaterial({
+        color: 0xffaa66,
+        transparent: true,
+        opacity: 0.9,
+      });
+      const dot = new THREE.Mesh(dotGeo, dotMat);
+      dot.userData.t = i / flowDotCount;
+      routeGroup.add(dot);
+      flowDots.push(dot);
+    }
+
+    // ============ 底部时间条 ============
+    const timelineScroll = document.getElementById('timeline-scroll');
+    const tlItems = [];
+
+    events.forEach((event, index) => {
+      const item = document.createElement('div');
+      item.className = 'tl-item' + (index === 0 ? ' active' : '');
+      item.innerHTML = `
+        <div class="date">${event.date}</div>
+        <div class="name">${event.title}</div>
+      `;
+      item.addEventListener('click', () => setActiveEvent(index));
+      timelineScroll.appendChild(item);
+      tlItems.push(item);
+    });
+
+    // 滚动时间条
+    window.scrollTimeline = (dir) => {
+      timelineScroll.scrollBy({ left: dir * 240, behavior: 'smooth' });
+    };
+
+    // ============ 详情浮层 ============
+    const detailPanel = document.getElementById('detail-panel');
+    const dDate = document.getElementById('dDate');
+    const dTitle = document.getElementById('dTitle');
+    const dDesc = document.getElementById('dDesc');
+
+    // ============ 激活某个事件 ============
+    let activeIndex = -1;
+
+    function setActiveEvent(index) {
+      if (index === activeIndex) return;
+      activeIndex = index;
+
+      // 底部时间条高亮
+      tlItems.forEach((item, i) => {
+        item.classList.toggle('active', i === index);
+        if (i === index) {
+          // 自动滚到可见
+          item.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
+      });
+
+      // 详情浮层
+      const ev = events[index];
+      dDate.textContent = ev.date;
+      dTitle.textContent = ev.title;
+      dDesc.textContent = ev.desc;
+      detailPanel.classList.add('show');
+      // 3秒后自动隐藏
+      clearTimeout(window.__detailTimer);
+      window.__detailTimer = setTimeout(() => {
+        detailPanel.classList.remove('show');
+      }, 4500);
+
+      // 高亮标记
+      markers.forEach((m, i) => {
+        if (i === index) {
+          m.sphere.scale.set(1.6, 1.6, 1.6);
+          m.sphere.material.emissiveIntensity = 3.0;
+          m.glow.material.opacity = 0.55;
+          m.glow.scale.set(1.4, 1.4, 1.4);
+          m.ring.material.opacity = 0.95;
+          m.ring.scale.set(1.4, 1.4, 1.4);
+          m.labelDiv.style.background = `rgba(${parseInt(ev.color.toString(16).slice(0,2),16)},${parseInt(ev.color.toString(16).slice(2,4),16)},${parseInt(ev.color.toString(16).slice(4,6),16)},0.95)`;
+          m.labelDiv.style.color = '#fff';
+          m.labelDiv.style.fontSize = '14px';
+          m.labelDiv.style.padding = '4px 14px';
+        } else {
+          m.sphere.scale.set(1, 1, 1);
+          m.sphere.material.emissiveIntensity = 1.8;
+          m.glow.material.opacity = 0.12;
+          m.glow.scale.set(1, 1, 1);
+          m.ring.material.opacity = 0.55;
+          m.ring.scale.set(1, 1, 1);
+          m.labelDiv.style.background = 'rgba(20,15,10,0.85)';
+          m.labelDiv.style.color = '#f0e0c0';
+          m.labelDiv.style.fontSize = '12px';
+          m.labelDiv.style.padding = '3px 10px';
+        }
+      });
+
+      // 相机平滑移动到该点
+      const targetPos = markers[index].spherePos;
+      const camOffset = new THREE.Vector3(25, 45, 45);
+      const desiredCamPos = targetPos.clone().add(camOffset);
+
+      // 手动补间动画
+      const startPos = camera.position.clone();
+      const startTarget = controls.target.clone();
+      const startTime = performance.now();
+      const duration = 900;
+
+      function animateCamera(now) {
+        const t = Math.min(1, (now - startTime) / duration);
+        // easeInOutCubic
+        const ease = t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2;
+        camera.position.lerpVectors(startPos, desiredCamPos, ease);
+        controls.target.lerpVectors(startTarget, targetPos, ease);
+        controls.update();
+        if (t < 1) requestAnimationFrame(animateCamera);
+      }
+      requestAnimationFrame(animateCamera);
+    }
+
+    // 暴露给第一段调用（初始化完成时）
+    window.__initPart2 = () => {
+      // 默认选中第一个
+      setTimeout(() => setActiveEvent(0), 400);
+    };
+
+    // 如果第一段已经初始化完毕（比如热更新），直接触发
+    if (window.__terrainData) {
+      setTimeout(() => setActiveEvent(0), 600);
+    }
+
+    // ============ 点击球体也能触发 ============
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    renderer.domElement.addEventListener('click', (e) => {
+      // 忽略点击 UI 区域
+      if (e.target !== renderer.domElement) return;
+
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+
+      const clickables = markers.map(m => m.sphere);
+      const hits = raycaster.intersectObjects(clickables, false);
+      if (hits.length > 0) {
+        const idx = hits[0].object.userData.eventIndex;
+        if (idx !== undefined) setActiveEvent(idx);
+      }
+    });
+
+    // ============ 悬停高亮 ============
+    renderer.domElement.addEventListener('mousemove', (e) => {
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+      const clickables = markers.map(m => m.sphere);
+      const hits = raycaster.intersectObjects(clickables, false);
+      renderer.domElement.style.cursor = hits.length > 0 ? 'pointer' : 'grab';
+    });
+
+    // ============ 动画循环（第二段附加） ============
+    const clock = new THREE.Clock();
+
+    function animatePart2() {
+      requestAnimationFrame(animatePart2);
+      const t = clock.getElapsedTime();
+
+      // 标记光晕脉动
+      markers.forEach((m, i) => {
+        if (i === activeIndex) {
+          const s = 1.3 + Math.sin(t * 3) * 0.3;
+          m.glow.scale.set(s, s, s);
+          m.glow.material.opacity = 0.35 + Math.sin(t * 4) * 0.2;
+        }
+      });
+
+      // 路线上的流动点
+      flowDots.forEach((dot, i) => {
+        dot.userData.t += 0.0015;
+        if (dot.userData.t > 1) dot.userData.t -= 1;
+        const p = curve.getPointAt(dot.userData.t);
+        dot.position.copy(p);
+      });
+
+      requestAnimationFrame(() => {});
+    }
+    animatePart2();
+
+    console.log('✅ 第二段初始化完成：标记、路线、时间条');
+  });
+</script>
 </body>
 </html>
